@@ -1,0 +1,27 @@
+# Local Postgres, so the production database engine is testable on a laptop.
+# Port 5433 on the host to avoid clashing with any locally installed Postgres.
+#
+#   docker compose up -d
+#   DATABASE_URL=postgresql+psycopg://habit:habit@localhost:5433/habit_tracker make test
+#
+# These credentials are local-only throwaways and are deliberately not secret.
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: habit-tracker-postgres
+    environment:
+      POSTGRES_USER: habit
+      POSTGRES_PASSWORD: habit
+      POSTGRES_DB: habit_tracker
+    ports:
+      - "5433:5432"
+    volumes:
+      - habit-tracker-pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U habit -d habit_tracker"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  habit-tracker-pgdata:

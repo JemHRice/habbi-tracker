@@ -1,0 +1,31 @@
+# Environment / secrets — never commit real values, only .env.example
+.env
+.env.*
+!.env.example
+
+# Private seed content: real habit names live here, the public demo board in
+# app/seed/data.py. See app/seed/data_local.example.py for the contract.
+app/seed/data_local.py
+
+# Local databases
+*.db
+*.sqlite
+*.sqlite3
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+build/
+dist/
+.venv/
+venv/
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Editors / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db

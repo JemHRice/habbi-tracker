@@ -1,0 +1,52 @@
+.habbi {
+  display: block;
+  overflow: visible;
+}
+
+/* Cheering Habbi hops. Encouraging Habbi sways gently — a nudge, not a nag. */
+.cheer {
+  animation: hop 900ms cubic-bezier(0.28, 0.84, 0.42, 1) 2;
+  transform-origin: 50% 90%;
+}
+
+.encourage {
+  animation: sway 2600ms ease-in-out infinite;
+  transform-origin: 50% 90%;
+}
+
+.oops {
+  animation: none;
+}
+
+@keyframes hop {
+  0%,
+  100% {
+    transform: translateY(0) scale(1, 1);
+  }
+  30% {
+    transform: translateY(-10%) scale(0.98, 1.03);
+  }
+  55% {
+    transform: translateY(0) scale(1.03, 0.97);
+  }
+  75% {
+    transform: translateY(-3%) scale(1, 1);
+  }
+}
+
+@keyframes sway {
+  0%,
+  100% {
+    transform: rotate(-2.5deg);
+  }
+  50% {
+    transform: rotate(2.5deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cheer,
+  .encourage {
+    animation: none;
+  }
+}

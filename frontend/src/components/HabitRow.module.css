@@ -1,0 +1,88 @@
+.row {
+  list-style: none;
+}
+
+.inner {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  width: 100%;
+  min-height: var(--tap);
+  padding: var(--space-3) var(--space-4);
+  margin: 0;
+  text-align: left;
+  background: var(--card);
+  border: 1px solid var(--cream-deep);
+  border-left: 4px solid var(--bucket, var(--rose));
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-soft);
+  transition:
+    transform var(--transition),
+    opacity var(--transition),
+    background var(--transition);
+}
+
+.active .inner:active {
+  transform: scale(0.985);
+}
+
+.marker {
+  flex: 0 0 auto;
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  border: 2.5px solid var(--bucket, var(--rose));
+  border-radius: var(--radius-pill);
+  color: var(--card);
+  transition: background var(--transition);
+}
+
+.done .marker {
+  background: var(--bucket, var(--rose));
+}
+
+.tick {
+  width: 17px;
+  height: 17px;
+}
+
+.text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.name {
+  font-size: var(--text-base);
+  color: var(--ink);
+  overflow-wrap: anywhere;
+}
+
+.meta {
+  font-size: var(--text-xs);
+  color: var(--ink-faint);
+}
+
+/* Completed items recede — quieter, not greyed out as if wrong. */
+.done .inner {
+  background: transparent;
+  box-shadow: none;
+  opacity: 0.72;
+}
+
+.done .name {
+  text-decoration: line-through;
+  text-decoration-color: var(--ink-faint);
+  text-decoration-thickness: 1.5px;
+}
+
+.bonus .inner {
+  border-style: dashed;
+  border-left-style: solid;
+}
+
+.locked .inner {
+  cursor: default;
+  opacity: 0.65;
+}

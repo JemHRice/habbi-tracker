@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" width="120" height="120">
+  <!-- Habbi's head, used as the app mark. Original artwork. -->
+  <rect width="120" height="120" rx="26" fill="#FAF6EE"/>
+  <g stroke="#6C6C2C" stroke-width="4.5">
+    <ellipse cx="47" cy="38" rx="9" ry="22" fill="#FFFDF9" transform="rotate(-9 47 38)"/>
+    <ellipse cx="73" cy="38" rx="9" ry="22" fill="#FFFDF9" transform="rotate(9 73 38)"/>
+  </g>
+  <ellipse cx="47" cy="40" rx="4" ry="14" fill="#E5C2CA" transform="rotate(-9 47 40)"/>
+  <ellipse cx="73" cy="40" rx="4" ry="14" fill="#E5C2CA" transform="rotate(9 73 40)"/>
+  <!-- The flower at the base of her left ear. -->
+  <g transform="translate(81 44)">
+    <ellipse cx="0" cy="-3.8" rx="2.6" ry="3.4" fill="#CA758A"/>
+    <ellipse cx="0" cy="-3.8" rx="2.6" ry="3.4" fill="#CA758A" transform="rotate(72)"/>
+    <ellipse cx="0" cy="-3.8" rx="2.6" ry="3.4" fill="#CA758A" transform="rotate(144)"/>
+    <ellipse cx="0" cy="-3.8" rx="2.6" ry="3.4" fill="#CA758A" transform="rotate(216)"/>
+    <ellipse cx="0" cy="-3.8" rx="2.6" ry="3.4" fill="#CA758A" transform="rotate(288)"/>
+    <circle r="2.1" fill="#DFC980"/>
+  </g>
+  <ellipse cx="60" cy="76" rx="30" ry="27" fill="#FFFDF9" stroke="#6C6C2C" stroke-width="4.5"/>
+  <ellipse cx="43" cy="84" rx="6" ry="3.6" fill="#F0D8DE"/>
+  <ellipse cx="77" cy="84" rx="6" ry="3.6" fill="#F0D8DE"/>
+  <circle cx="50" cy="75" r="3.2" fill="#6C6C2C"/>
+  <circle cx="70" cy="75" r="3.2" fill="#6C6C2C"/>
+  <ellipse cx="60" cy="86" rx="3" ry="2.2" fill="#CA758A"/>
+  <path d="M60 88 q-5 5 -9 1 M60 88 q5 5 9 1" fill="none" stroke="#6C6C2C" stroke-width="2.6" stroke-linecap="round"/>
+</svg>

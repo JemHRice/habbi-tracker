@@ -10,6 +10,10 @@ more people. Stay tuned!
 
 ## The backend — Phases 1 & 2
 
+> The **frontend** (Phase 3) lives in [`frontend/`](frontend/) and has its own
+> README covering how to run it, the offline behaviour, and Habbi.
+
+
 The product is a **calm, non-punitive recording tool**. It celebrates what gets
 done and never flags, reddens or guilt-trips what doesn't. That single idea
 justifies most of what follows: percentages that can only cap at 100%, no
@@ -316,8 +320,10 @@ today and in five years.
 **User A** — a full board: 8 buckets and 29 habits, with weekday schedules, time
 caps, season flags and `anytime` flags. This is the dataset the tests exercise.
 
-**User B** — the same app, no habits. Their board gets filled in through the app
-later; nothing has been invented for them.
+**User B** — the same app, no habits, and deliberately so. They build their board
+in the app itself via `POST /buckets` and `POST /habits`; nothing is ever seeded
+for them. That makes the empty board the honest test of the habit-management
+surface, which exists precisely so a board can be built from nothing.
 
 Display names are the generic placeholders `"User A"` and `"User B"` — rename
 them in-app.
@@ -427,8 +433,8 @@ Recorded here rather than expanded into scope. All are in `docs/DECISIONS.md` to
 - **Cross-board access returns 404, not 403**, so one board cannot probe for the
   existence of rows on the other.
 
-## Not built in this phase
+## Not built yet
 
-The React/Vite PWA, mascot assets and celebration logic, notification delivery,
-offline sync, public sign-up, the warehouse pipeline, and flexible "any N days
-per week" habits.
+Deployment (Phase 4 — Azure Container Apps, Static Web Apps, Neon, GitHub
+Actions), notification delivery, offline mutation sync, public sign-up, the
+warehouse pipeline, and flexible "any N days per week" habits.

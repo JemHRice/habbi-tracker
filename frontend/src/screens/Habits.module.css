@@ -1,0 +1,259 @@
+.back {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--tap);
+  color: var(--ink-soft);
+  text-decoration: none;
+}
+
+.heading {
+  margin-bottom: var(--space-4);
+  font-size: var(--text-2xl);
+}
+
+.quiet {
+  color: var(--ink-soft);
+  text-align: center;
+}
+
+.empty {
+  padding: var(--space-4);
+  margin-bottom: var(--space-4);
+  color: var(--ink-soft);
+  background: var(--cream-deep);
+  border-radius: var(--radius);
+}
+
+.habitList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin: 0 0 var(--space-4);
+  padding: 0;
+  list-style: none;
+}
+
+.habitItem {
+  background: var(--card);
+  border: 1px solid var(--cream-deep);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+
+.habitRow {
+  display: flex;
+  align-items: stretch;
+}
+
+.reorder {
+  display: flex;
+  flex-direction: column;
+  flex: 0 0 auto;
+  border-right: 1px solid var(--cream-deep);
+}
+
+.reorderButton {
+  flex: 1;
+  width: 38px;
+  font-size: 10px;
+  color: var(--ink-faint);
+  background: transparent;
+  border: none;
+}
+
+.reorderButton:disabled {
+  opacity: 0.3;
+}
+
+.habitMain {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  flex: 1;
+  min-height: var(--tap);
+  padding: var(--space-3);
+  text-align: left;
+  background: transparent;
+  border: none;
+}
+
+.habitName {
+  font-size: var(--text-base);
+}
+
+.habitDays {
+  font-size: var(--text-xs);
+  color: var(--ink-faint);
+}
+
+.editor {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  background: var(--cream);
+  border-top: 1px solid var(--cream-deep);
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.label {
+  font-size: var(--text-sm);
+}
+
+.hint {
+  display: block;
+  font-size: var(--text-xs);
+  color: var(--ink-faint);
+}
+
+.input {
+  width: 100%;
+  min-height: var(--tap);
+  padding: var(--space-2) var(--space-3);
+  font: inherit;
+  background: var(--card);
+  border: 1px solid var(--cream-deep);
+  border-radius: var(--radius-sm);
+}
+
+.colourInput {
+  width: 64px;
+  height: var(--tap);
+  padding: 2px;
+  background: var(--card);
+  border: 1px solid var(--cream-deep);
+  border-radius: var(--radius-sm);
+}
+
+.weekdays {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: var(--space-1);
+}
+
+.weekday {
+  min-height: 42px;
+  padding: 0;
+  font-size: var(--text-xs);
+  color: var(--ink-soft);
+  background: var(--card);
+  border: 1px solid var(--cream-deep);
+  border-radius: var(--radius-sm);
+  transition:
+    background var(--transition),
+    color var(--transition);
+}
+
+.weekdayOn {
+  color: var(--card);
+  background: var(--rose);
+  border-color: var(--rose);
+}
+
+.checkRow {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  font-size: var(--text-sm);
+}
+
+.checkRow input {
+  width: 22px;
+  height: 22px;
+  margin-top: 2px;
+  accent-color: var(--rose);
+}
+
+.editorActions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.primary {
+  min-height: var(--tap);
+  padding: 0 var(--space-5);
+  color: var(--card);
+  background: var(--rose);
+  border: none;
+  border-radius: var(--radius-pill);
+}
+
+.primary:disabled {
+  opacity: 0.5;
+}
+
+.textButton {
+  min-height: var(--tap);
+  color: var(--ink-faint);
+  background: none;
+  border: none;
+  text-decoration: underline;
+}
+
+.archiveButton {
+  min-height: var(--tap);
+  margin-left: auto;
+  padding: 0 var(--space-4);
+  color: var(--olive);
+  background: transparent;
+  border: 1.5px solid var(--cream-deep);
+  border-radius: var(--radius-pill);
+}
+
+.addButton {
+  width: 100%;
+  min-height: var(--tap);
+  color: var(--rose-deep);
+  background: transparent;
+  border: 1.5px dashed var(--blush);
+  border-radius: var(--radius-pill);
+}
+
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  margin-top: var(--space-5);
+}
+
+.sectionHeading {
+  font-size: var(--text-sm);
+  font-family: var(--font-body);
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+}
+
+.bucketList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.bucketChip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-1) var(--space-3);
+  font-size: var(--text-sm);
+  background: var(--card);
+  border: 1px solid var(--cream-deep);
+  border-radius: var(--radius-pill);
+}
+
+.swatch {
+  width: 14px;
+  height: 14px;
+  border-radius: var(--radius-pill);
+}

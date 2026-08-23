@@ -285,14 +285,68 @@ Format: **Decision** — rationale. (Alternatives considered / rejected, where u
 - **`app/main.py` exposes a `create_app()` factory** so tests build an isolated app with
   the database dependency overridden, rather than mutating a module-level singleton.
 
+## Phase 3 implementation decisions (added when the PWA was built)
+- **Node 24 LTS, and the frontend lives in `frontend/` in the same repo.** Node was not
+  installed at all; winget's LTS channel has moved past 22. One repo keeps Phase 4's
+  CI able to build both halves from a single checkout.
+- **Styling is CSS Modules over design tokens**, not Tailwind. The palette is defined
+  once as custom properties in `src/styles/tokens.css`; the design is bespoke and
+  botanical rather than utility-shaped, and the decorative SVG work needed real CSS
+  anyway. **The token set deliberately contains no error/danger/warning colour for
+  habit state**, so nothing can render an unfinished day as a failure by accident.
+- **Habbi is line-plus-soft-fill**: olive outline, blush inner ears and cheeks. Chosen
+  over pure line (too faint at calendar size) and solid fills (reads childish, and
+  further from botanical-calm). Drawn from scratch as ellipses and stroked paths in
+  `src/components/Habbi.tsx`; three poses, cheer/encourage/oops, and **no sad pose,
+  ever**. The no-data pose is Habbi covering her mouth with both paws — an "oops",
+  not a shrug (decided 2026-08-23); its arms draw in front of the face rather than
+  behind the body, which is the one pose-dependent bit of draw order. Arms are filled
+  capsules matching the feet, with **no hands or mitts**.
+- **Habbi is a girl (she/her), with a small rose-and-gold flower at the base of her left
+  ear** (decided 2026-08-23). "Left" is hers, so it renders on the viewer's right. The
+  flower is part of the character, so it appears in every pose and in the app mark, not
+  just at large sizes. Fonts are Fraunces + Nunito Sans, self-hosted via Fontsource so the PWA makes
+  no third-party requests and renders correctly offline.
+- **The habit editor is properly built, not "basic" as the spec allowed.** Since User B
+  now builds their whole board in-app, that screen is the only way their habits ever
+  exist, so it got a weekday picker, bucket creation with colour, inline editing and
+  reordering. **Reordering uses up/down buttons rather than drag** — dragging fights
+  scrolling on a phone and is hostile to keyboards and screen readers.
+- **Celebrations fire on the transition, never on load.** The ladder watches for
+  `done_count` to *increase*; opening the app onto a half-finished day sets the baseline
+  silently. Un-ticking never celebrates. Rejected persisting fired tiers per date — the
+  increase-only rule solves the reload case with no storage.
+- **Mutations are optimistic, and the server's response replaces the prediction.** The
+  local predictions in `src/api/optimistic.ts` mirror the backend rules (most importantly
+  that a bonus never moves the percentage) and are pure functions, so they are tested
+  directly. On failure the change rolls back and a soft notice explains why; **nothing
+  retries silently**, because a surprise re-tick is worse than an honest failure.
+- **API responses are never precached by the service worker.** The shell is precached so
+  the app opens offline, and the *last-known board* comes from a persisted React Query
+  cache, which knows how old it is. A stale board served from a service worker that
+  didn't know it was stale would be worse than no board.
+- **Locked days disable their controls** rather than letting a tap become a 403. The UI
+  mirrors the edit window instead of discovering it by being refused.
+- **The PIN screen uses its own on-screen keypad**, not a text input: bigger targets, no
+  system keyboard sliding over the layout, one-handed.
+- **A 401 from anywhere ends the session in exactly one place** (`AuthContext`
+  subscribes to the API client), so no screen has to handle expiry itself.
+- **Vitest 3, not 2.** Vitest 2 bundles its own Vite 5, which collided with the project's
+  Vite 6 and produced duplicate-type errors in `vite.config.ts`.
+
 ## Still-soft / open items (cheap to change, decide when convenient)
 - The three **provisional bucket colours** (Life admin, Social, Team sport) — palette only has
   five core colours; these are placeholders. **Kept as-is for now** (decided 2026-08-23).
 - The **morning→night sort order** for the 29 habits — a best-guess seed. Trivial to
   reorder, and will be reorderable in-app once Phase 2/3 land.
-- **User B's actual habit list** — seeded empty; to be added to `data_local.py` when
-  defined, or built in-app.
-- **Habbi's final look** — the agent produces a first pass; approve or redirect.
+- ~~**User B's actual habit list**~~ — **settled 2026-08-23: User B builds their board
+  in-app; nothing will ever be seeded for them.** The list was lost, and re-deriving it
+  to seed once is pointless now that the management endpoints exist. `BOARD_B` stays
+  empty in both the demo board and `data_local.py`. This is also the honest test of the
+  habit-management surface: it exists precisely so a board can be built from nothing.
+- **Habbi's final look** — first pass built in `src/components/Habbi.tsx` (line + soft
+  fill, three poses). Style approved 2026-08-23; the drawing itself still to be eyeballed
+  and redirected if wanted.
 
 ## Explicitly deferred (not v1)
 - Flexible "any N days per week" habit type.

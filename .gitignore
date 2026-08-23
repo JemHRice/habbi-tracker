@@ -12,6 +12,18 @@ app/seed/data_local.py
 *.sqlite
 *.sqlite3
 
+# Node / frontend
+node_modules/
+dist/
+dist-ssr/
+.vite/
+*.tsbuildinfo
+frontend/dev-dist/
+frontend/public/pwa-*.png
+frontend/public/apple-touch-icon*.png
+frontend/public/maskable-icon*.png
+frontend/public/favicon.ico
+
 # Python
 __pycache__/
 *.py[cod]

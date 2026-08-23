@@ -1,0 +1,48 @@
+.shell {
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
+}
+
+.page {
+  flex: 1;
+  width: min(560px, 100%);
+  margin: 0 auto;
+  padding: calc(var(--space-4) + env(safe-area-inset-top)) var(--space-4)
+    calc(96px + env(safe-area-inset-bottom));
+}
+
+.bar {
+  position: fixed;
+  left: 50%;
+  bottom: 0;
+  transform: translateX(-50%);
+  z-index: 30;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  width: min(560px, 100%);
+  padding: var(--space-2) var(--space-2) calc(var(--space-2) + env(safe-area-inset-bottom));
+  background: var(--card);
+  border-top: 1px solid var(--cream-deep);
+}
+
+.tab {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  min-height: var(--tap);
+  padding: var(--space-2);
+  color: var(--ink-faint);
+  text-decoration: none;
+  border-radius: var(--radius);
+  transition: color var(--transition);
+}
+
+.tabActive {
+  color: var(--rose);
+}
+
+.tabLabel {
+  font-size: var(--text-xs);
+}

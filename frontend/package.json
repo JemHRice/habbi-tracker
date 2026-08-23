@@ -1,0 +1,42 @@
+{
+  "name": "habbi-tracker-frontend",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "description": "Habbi-Tracker PWA — the calm, non-punitive habit board.",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc -b && vite build",
+    "preview": "vite preview",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "typecheck": "tsc -b --noEmit",
+    "icons": "pwa-assets-generator"
+  },
+  "dependencies": {
+    "@fontsource-variable/fraunces": "^5.1.0",
+    "@fontsource-variable/nunito-sans": "^5.1.0",
+    "@tanstack/query-sync-storage-persister": "^5.62.0",
+    "@tanstack/react-query": "^5.62.0",
+    "@tanstack/react-query-persist-client": "^5.62.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "react-router-dom": "^7.1.0"
+  },
+  "devDependencies": {
+    "@testing-library/dom": "^10.4.0",
+    "@testing-library/jest-dom": "^6.6.3",
+    "@testing-library/react": "^16.1.0",
+    "@testing-library/user-event": "^14.5.2",
+    "@types/node": "^26.2.0",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "@vite-pwa/assets-generator": "^0.2.6",
+    "@vitejs/plugin-react": "^4.3.4",
+    "jsdom": "^25.0.1",
+    "typescript": "^5.7.2",
+    "vite": "^6.0.0",
+    "vite-plugin-pwa": "^0.21.1",
+    "vitest": "^3.2.7"
+  }
+}

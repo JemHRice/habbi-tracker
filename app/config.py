@@ -46,6 +46,22 @@ class Settings(BaseSettings):
     seed_user_b_pin: str = "567890"
     """Development-only PIN for the seeded empty board. Override in `.env`."""
 
+    cors_origins: str = "http://localhost:5173,http://127.0.0.1:5173"
+    """Comma-separated origins allowed to call the API. The defaults are Vite's
+    dev server; production sets this to the deployed frontend origin."""
+
+    pin_throttle_max_attempts: int = 10
+    """Failed PIN attempts for one user before a cooldown starts."""
+
+    pin_throttle_cooldown_seconds: int = 300
+    """How long that cooldown lasts. Long enough to stop brute force against a
+    six-digit PIN, short enough that a genuine mistype is not punishing."""
+
+    @property
+    def cors_origin_list(self) -> list[str]:
+        """`cors_origins` split into a list, ignoring blanks and stray spaces."""
+        return [origin.strip() for origin in self.cors_origins.split(",") if origin.strip()]
+
 
 @lru_cache
 def get_settings() -> Settings:

@@ -11,6 +11,7 @@ from __future__ import annotations
 
 from datetime import date as date_type
 from datetime import datetime
+from typing import Annotated, Literal, Union
 
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -42,6 +43,11 @@ class CompletedEntry(BaseModel):
 class TodayView(BaseModel):
     """The home screen: what is left, what is done, and how the day is going."""
 
+    kind: Literal["today"] = "today"
+    """Discriminator. The mutation endpoints return whichever of `TodayView` and
+    `DayDetailView` matches the date that was changed, and this is how a client
+    tells them apart without inspecting fields."""
+
     date: date_type
     editable: bool
 
@@ -69,6 +75,9 @@ class DayDetailView(BaseModel):
     """A single day, looked back on from the calendar."""
 
     model_config = ConfigDict(from_attributes=True)
+
+    kind: Literal["day"] = "day"
+    """Discriminator; see :class:`TodayView`."""
 
     date: date_type
     editable: bool
@@ -135,3 +144,13 @@ class MonthView(BaseModel):
     month: int
     habits: list[MonthHabitRate] = Field(default_factory=list)
     days: list[MonthDayView] = Field(default_factory=list)
+
+
+DayView = Annotated[Union[TodayView, DayDetailView], Field(discriminator="kind")]
+"""Whichever day-shaped view matches the date in question.
+
+The mutation endpoints return the *live* view of the date they changed: a
+`TodayView` when that date is the user's today (the Today screen needs the
+extras picker and the remaining count), and a `DayDetailView` when it is
+yesterday being caught up. Clients discriminate on `kind`.
+"""

@@ -8,6 +8,7 @@ only says what it is.
 from app.schemas.views import (
     CompletedEntry,
     DayDetailView,
+    DayView,
     HabitRef,
     MonthDayView,
     MonthHabitRate,
@@ -20,6 +21,7 @@ from app.schemas.views import (
 __all__ = [
     "CompletedEntry",
     "DayDetailView",
+    "DayView",
     "HabitRef",
     "MonthDayView",
     "MonthHabitRate",

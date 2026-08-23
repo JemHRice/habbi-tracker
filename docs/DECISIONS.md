@@ -236,6 +236,55 @@ Format: **Decision** — rationale. (Alternatives considered / rejected, where u
   provisioning finishes. Folded into migration `0001` because nothing was deployed
   yet; this is the last change that may do so.
 
+## Phase 2 implementation decisions (added when the HTTP API was built)
+- **Habit and bucket management got their own domain modules** (`app/domain/habits.py`,
+  `app/domain/buckets.py`) rather than being written inline in the routers. Phase 2's
+  brief is "controllers are thin, no business rules in router files", and archive-not-
+  delete plus forward-only edits are business rules. Routers now contain no SQL.
+- **Mutations return the live view of the date they changed** — a `TodayView` when that
+  date is the user's today, a `DayDetailView` when it is yesterday being caught up — so
+  an optimistic client can settle without a second round trip and always gets data about
+  the screen it is on. To keep that union properly typed, `TodayView` and `DayDetailView`
+  each gained a `kind` discriminator (`"today"` / `"day"`). Rejected always returning
+  `TodayView` (wrong data when catching up yesterday) and always returning
+  `DayDetailView` (lacks `available_extras`, so the extras picker would go stale).
+- **Reads backfill up to the user's local today, and no further.** This is what stops the
+  frontend seeing a gap, but it deliberately never materialises a historical month that
+  was never generated: doing so would write past rows from *today's* schedule, which is
+  precisely the retroactive reshaping the model forbids. A GET therefore has a write side
+  effect, accepted knowingly — the alternative is a frontend that must know when to ask
+  the backend to generate days.
+- **PIN throttling: 10 failures, then a 5-minute cooldown**, in-process and per user.
+  Chosen over a stricter 5/15 because a wrong-finger lockout costs the two actual users,
+  not an attacker — 10 tries is still nothing against a million combinations, and it fits
+  the calm, non-punitive ethos. The cooldown is checked *before* the PIN is verified, so
+  it cannot be used to confirm a guess. State is in memory and resets on restart: at two
+  users a restart is not a practical attack vector, and it avoids a table, a migration
+  and a cleanup job.
+- **`PUT /me/pin` was added, beyond the Phase 2 spec's endpoint table.** The spec predates
+  `pin_is_provisional`; without a change endpoint the flag would be unactionable. Login and
+  `GET /me` surface it as `must_change_pin`. Changing a PIN does **not** invalidate the
+  current session — logging someone out of the device in their hand is hostile.
+- **`PATCH /me` accepts `display_name`, beyond the spec's table.** The seed uses the
+  placeholders "User A"/"User B", so without this they could only be renamed by re-seeding
+  or editing the database by hand, contradicting the "rename in-app" plan.
+- **Cross-board access is `404 NOT_FOUND`, never `403`.** Telling one board that a habit
+  exists but belongs to the other board is itself a leak, so "not yours" and "not there"
+  are made indistinguishable. `get_habit`/`get_bucket` scope every lookup by `user_id`.
+- **One request is one transaction.** The `get_db` dependency commits on success and rolls
+  back on any exception, so endpoints never call `commit()` and a failed request leaves
+  nothing behind.
+- **Domain errors map to HTTP in exactly one place** (`app/api/errors.py`), walking the
+  exception's MRO so a new subclass is reported sensibly before it is listed explicitly.
+  Routers never re-check a rule the domain already enforces — the edit window is surfaced
+  by letting `EditWindowClosed` propagate.
+- **Clearing a habit's time cap needs an explicit `clear_time_cap` flag**, because in a
+  partial update a null already means "leave this alone".
+- **CORS origins come from `CORS_ORIGINS`** (comma-separated), defaulting to Vite's dev
+  server. Production overrides it with the deployed frontend origin.
+- **`app/main.py` exposes a `create_app()` factory** so tests build an isolated app with
+  the database dependency overridden, rather than mutating a module-level singleton.
+
 ## Still-soft / open items (cheap to change, decide when convenient)
 - The three **provisional bucket colours** (Life admin, Social, Team sport) — palette only has
   five core colours; these are placeholders. **Kept as-is for now** (decided 2026-08-23).

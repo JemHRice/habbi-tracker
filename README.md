@@ -2,22 +2,27 @@
 
 Welcome to Habbi-Tracker! A (currently) two-person habit tracker. Two people 
 each keep a private daily board: open the app, see the habits scheduled for 
-today, tick them off. The boards are fully separate — no shared habits, no 
+today, tick them off. The boards are fully separate with no shared habits, no 
 visibility into each other's data. Right now, it has simply been one-shotted 
 by Opus 5 after exhaustive planning, and is for myself and one other. Once 
 deployed, I'll be slowly adding features to hopefully be more flexible for 
 more people. Stay tuned!
 
-## Habit Tracker — Phase 1: data model & domain layer
+## The backend — Phases 1 & 2
 
 The product is a **calm, non-punitive recording tool**. It celebrates what gets
 done and never flags, reddens or guilt-trips what doesn't. That single idea
 justifies most of what follows: percentages that can only cap at 100%, no
 "behind" or "exceeded" anywhere, and a past that is never rewritten.
 
-This phase builds the foundation: the schema, the domain logic, the read models
-the API will serve, the seed, and the tests. **There are no feature endpoints,
-no frontend and no notifications here** — those are Phases 2–4.
+**Phase 1** built the foundation: the schema, the domain logic, the read models,
+the seed and the tests. **Phase 2** put an HTTP API over it — a thin transport
+layer where controllers validate input, call domain functions and shape
+responses. Every business rule still lives in `app/domain/`; if a router looks
+like it is deciding something, the decision is in the wrong place.
+
+**There is no frontend and no notification delivery here** — those are Phases 3
+and 4.
 
 ---
 
@@ -164,28 +169,123 @@ The backend returns the percentage and the counts; it does not decide when to ch
 
 ---
 
+## The HTTP API
+
+Interactive docs are at **`/docs`** once the server is running (`make run`).
+
+### Auth flow
+
+There is no public sign-up — users are provisioned by the seed. A device binds
+itself once, then only ever sends a PIN.
+
+1. `GET /users` — unauthenticated, returns `[{id, display_name}]` and nothing
+   more. The one-time "who are you?" picker.
+2. `POST /auth/login` with `{user_id, pin}` — returns `{token, expires_at,
+   must_change_pin}`.
+3. Send `Authorization: Bearer <token>` on everything else.
+
+The token expires at the **next local midnight in the user's timezone** — the
+same day boundary the edit window uses — so it works out as roughly one PIN
+entry each morning. Ten failed attempts start a five-minute cooldown
+(`429 PIN_THROTTLED`); the cooldown is checked *before* the PIN is verified, so
+it cannot be used to confirm a guess.
+
+### Endpoints
+
+| Method | Path | Purpose |
+|---|---|---|
+| GET | `/health` | Liveness. No token needed. |
+| GET | `/users` | Device binding. No token needed. |
+| POST | `/auth/login` | PIN → session token. |
+| POST | `/auth/logout` | End the current session. |
+| GET | `/today` | The home screen for the user's local today. |
+| GET | `/days/{date}` | One day in detail. |
+| GET | `/weeks?containing_date=` | Mon–Sun of that week; defaults to this week. |
+| GET | `/months/{year}/{month}` | Per-habit rates plus calendar fills. |
+| POST | `/completions` | Tick a scheduled habit. |
+| DELETE | `/completions` | Un-tick. |
+| POST | `/completions/bonus` | Log something extra, excluded from the %. |
+| GET | `/me` | Settings. |
+| PATCH | `/me` | Change display name, timezone or the season toggle. |
+| PUT | `/me/pin` | Change PIN; clears `must_change_pin`. |
+| GET | `/buckets` · POST `/buckets` · PATCH `/buckets/{id}` | Bucket management. |
+| GET | `/habits` · POST `/habits` · PATCH `/habits/{id}` | Habit management. |
+| PUT | `/habits/{id}/schedule` | Replace scheduled weekdays. |
+| PATCH | `/habits/reorder` | Batch reorder. |
+| POST | `/habits/{id}/archive` | Soft delete. **There is no hard delete.** |
+
+### What the mutations return
+
+The three completion endpoints return the **live view of the date they
+changed**, so a client can settle an optimistic update without a second round
+trip. That is a `TodayView` when the date is the user's today, and a
+`DayDetailView` when it is yesterday being caught up. Both carry a `kind` field
+(`"today"` / `"day"`) to discriminate on.
+
+### Errors
+
+Every error uses the same envelope:
+
+```json
+{"error": {"code": "EDIT_WINDOW_LOCKED", "message": "..."}}
+```
+
+| Code | Status | When |
+|---|---|---|
+| `UNAUTHENTICATED` | 401 | Missing, unknown or expired token. |
+| `PIN_INVALID` | 401 | Wrong PIN at login, or wrong current PIN on change. |
+| `PIN_THROTTLED` | 429 | Cooldown in force after repeated failures. |
+| `EDIT_WINDOW_LOCKED` | 403 | The date is older than yesterday. |
+| `NOT_FOUND` | 404 | No such record **on your board**. |
+| `VALIDATION` | 400 / 422 | Malformed request, or a refused domain operation. |
+
+`NOT_FOUND` deliberately covers "belongs to the other board" as well as "does
+not exist": telling one board that a habit exists but is someone else's is
+itself a leak.
+
+### Reads bring the board up to date
+
+The domain read functions are pure, so the API is where the gap gets filled:
+every read first backfills up to the user's local today, and someone who did not
+open the app for three days gets correct "scheduled but not completed" rows for
+those days. It only ever fills **up to today** — it never reaches back to
+generate a month that was never materialised, because that would write history
+using today's schedule, which is exactly the retroactive reshaping the model
+forbids.
+
+---
+
 ## Layout
 
 ```
 app/
-  main.py         FastAPI bootstrap — /health only in this phase
+  main.py         FastAPI app: routers, CORS, exception handlers
   config.py       pydantic-settings; everything comes from the environment
   db.py           engine/session, SQLite- and Postgres-aware
   clock.py        the single overridable source of "now"
   models/         SQLAlchemy models, one concern per file
   schemas/        Pydantic read models (TodayView, WeekView, …)
-  domain/
+  domain/         every business rule lives here
     dates.py        local day boundaries, dim_date population
     scheduling.py   is_scheduled, ensure_day_materialised, backfill
     tracking.py     can_edit, complete/uncomplete/add_bonus
     reads.py        get_today, get_day_detail, get_week, get_month
+    habits.py       create/edit/reschedule/reorder/archive
+    buckets.py      bucket management
     auth.py         PIN hashing, sessions
     errors.py       the domain's refusals
+  api/            the transport layer — thin, no business rules
+    deps.py         db session, current user, bring-up-to-date
+    errors.py       error envelope + domain-to-HTTP mapping
+    throttle.py     in-process PIN cooldown
+    schemas.py      request/response bodies
+    routers/        auth, board, completions, settings, habits, buckets
   seed/
-    data.py         the seed boards as plain Python data
+    data.py         the public demo board
     seed.py         the guarded loader
 alembic/          migrations
 tests/            pytest
+  api/            endpoint tests
 ```
 
 ### The read models
@@ -198,7 +298,7 @@ morning-to-night order, then the ones with no natural time — and the completed
 pile by `completed_at`, i.e. the order things were actually ticked.
 
 **Reads are pure.** They never write. A caller that needs today's rows to exist
-runs `backfill` first; Phase 2's API layer will do that on the way in.
+runs `backfill` first, which the API layer does on the way in.
 
 ### Testing
 
@@ -261,12 +361,12 @@ Seed PINs come from `SEED_USER_A_PIN` / `SEED_USER_B_PIN`, so no PIN is written
 into the repository. The values in `.env.example` are development throwaways.
 
 A seeded PIN is marked **provisional** (`users.pin_is_provisional`), because
-provisioning issued it rather than the person choosing it. `set_pin` clears the
-flag, and Phase 2's login will surface it so the person is asked to pick their
-own. The flag records where a PIN came from, not what it is — so someone who
-deliberately chooses the same digits the seed happened to use is never asked to
-change them. Once both people have set their own PIN, production no longer needs
-`SEED_USER_*_PIN` in its environment at all.
+provisioning issued it rather than the person choosing it. Login and `GET /me`
+report it as `must_change_pin`, and `PUT /me/pin` clears it. The flag records
+where a PIN came from, not what it is — so someone who deliberately chooses the
+same digits the seed happened to use is never asked to change them. Once both
+people have set their own PIN, production no longer needs `SEED_USER_*_PIN` in
+its environment at all.
 
 A note on the schedules: a weekly one-off that could in principle happen on any
 of several days (e.g. seeing a friend once a week) is pinned to a **single
@@ -309,13 +409,26 @@ Recorded here rather than expanded into scope. All are in `docs/DECISIONS.md` to
   another day — the cost of an unambiguous boundary.
 - **Archived habits are not schedulable and not tickable**, but their history is
   fully preserved and still appears in week and month views.
-- **`habits.sort_order` is display-only**, so reordering habits in-app (Phase 2/3)
-  needs no schema change and cannot distort past percentages.
-- **PIN brute-force throttling is Phase 2**, where the request context that makes
-  rate limiting meaningful actually exists.
+- **`habits.sort_order` is display-only**, so reordering habits cannot distort
+  past percentages. `PATCH /habits/reorder` just writes new numbers.
+- **PIN throttling is in-process and per-user.** State resets when the container
+  does, which is an accepted trade at two users: a restart is not a practical
+  attack vector, and it avoids a table, a migration and a cleanup job.
+- **A request is one transaction.** The database dependency commits on success
+  and rolls back on any error, so endpoints never call `commit()` themselves and
+  a failed request leaves nothing behind.
+- **Reads write.** `GET /today` and friends backfill first, so a GET does have a
+  side effect. It is deliberate — the alternative is a frontend that has to know
+  when to ask the backend to generate days.
+- **`PATCH /me` cannot set `reminders_enabled`.** The field is dormant, so it is
+  exposed read-only and nothing is wired to it.
+- **Clearing a time cap needs `clear_time_cap: true`.** In a partial update a
+  null means "leave alone", so removing a value needs its own flag.
+- **Cross-board access returns 404, not 403**, so one board cannot probe for the
+  existence of rows on the other.
 
 ## Not built in this phase
 
-HTTP feature endpoints (login, today, tick, week, month), the React/Vite PWA,
-mascot assets and celebration logic, notification delivery, the warehouse
-pipeline, and flexible "any N days per week" habits.
+The React/Vite PWA, mascot assets and celebration logic, notification delivery,
+offline sync, public sign-up, the warehouse pipeline, and flexible "any N days
+per week" habits.

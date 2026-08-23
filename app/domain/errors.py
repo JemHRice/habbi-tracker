@@ -26,6 +26,23 @@ class InvalidPin(DomainError):
     """
 
 
+class NotFound(DomainError):
+    """The requested record does not exist on this user's board.
+
+    Also raised when a record exists but belongs to someone else: boards are
+    fully separate, so "not yours" and "not there" are deliberately
+    indistinguishable from the outside.
+    """
+
+
+class HabitNotFound(NotFound):
+    """No such habit on this user's board."""
+
+
+class BucketNotFound(NotFound):
+    """No such bucket on this user's board."""
+
+
 class HabitNotOwned(DomainError):
     """The habit belongs to a different user. Boards are fully separate."""
 

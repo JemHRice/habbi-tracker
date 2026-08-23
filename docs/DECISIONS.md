@@ -334,6 +334,46 @@ Format: **Decision** — rationale. (Alternatives considered / rejected, where u
 - **Vitest 3, not 2.** Vitest 2 bundles its own Vite 5, which collided with the project's
   Vite 6 and produced duplicate-type errors in `vite.config.ts`.
 
+## Phase 4 implementation decisions (added when deployment was built)
+- **GitHub Actions authenticates to Azure by OIDC federation, not a stored password.**
+  Workflows exchange a short-lived GitHub token for an Azure one, so the three values in
+  GitHub secrets are *identifiers*, not credentials — nothing to rotate or leak. The app
+  registration gets Contributor on the resource group only.
+- **The API image is a public GHCR package.** Free, already tied to the GitHub account,
+  and a public package needs no pull credential at all — which removes the one long-lived
+  secret Container Apps would otherwise hold. The image contains no secrets (all config is
+  env vars) and the source is public anyway. Rejected ACR (~$5/mo breaks the $0 target)
+  and a private package (another credential to rotate; documented as an option).
+- **The one-time seed runs from the developer's laptop, not from the container.** The
+  private board lives in a gitignored `data_local.py`, which is excluded from the image and
+  absent from CI — so a container-side seed would silently create the *generic demo board*
+  in production. Seeding against the Neon URL from the machine that actually has the file
+  is the only path that puts the real habits in production, and it keeps them out of both
+  the image and the registry. Verified: the in-container seed does produce the demo board.
+- **Migrations run in the container entrypoint, the seed never does.** Every start applies
+  outstanding Alembic revisions (idempotent, forward-only) before serving, so the schema
+  always matches the code. The seed is deliberately excluded from that path so no deploy
+  can duplicate a board.
+- **One uvicorn worker, on purpose.** The PIN throttle keeps state in process, so a second
+  worker would hand an attacker a second allowance. At two users there is nothing to gain
+  from more.
+- **CORS gained an optional regex** (`CORS_ORIGIN_REGEX`) because Static Web Apps names
+  every pull-request preview differently, so those origins cannot be listed ahead of time.
+  The pattern is anchored to this app's own hostname prefix and suffix so it cannot admit
+  another site. The literal production origin is still an exact-match entry.
+- **`provision.sh` deploys the Bicep template twice.** The Static Web App hostname does not
+  exist until the first pass creates it, and CORS needs it — so the second pass fills it
+  in. Being an ARM deployment, re-running converges rather than duplicating.
+- **Deploy jobs skip cleanly when the Azure secrets are absent**, rather than failing the
+  build. `secrets` is not available in a job-level `if`, so a tiny `configured` job computes
+  readiness and passes it down as an output. This means the workflows could be committed and
+  pushed before any infrastructure existed, with tests still running and gating.
+- **Scripts are `bash`, with no PowerShell twin** — unlike `make.ps1`. Git Bash ships with
+  Git for Windows and is present, and these run once or twice in a project's life, so a
+  second copy to keep in sync is not worth it.
+- **Log Analytics is provisioned because Container Apps requires it** for console logs. At
+  this volume it sits inside the free ingestion grant; retention is capped at 30 days.
+
 ## Still-soft / open items (cheap to change, decide when convenient)
 - The three **provisional bucket colours** (Life admin, Social, Team sport) — palette only has
   five core colours; these are placeholders. **Kept as-is for now** (decided 2026-08-23).

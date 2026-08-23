@@ -34,7 +34,7 @@ future API will expose.
 
 | Area | Decision |
 |---|---|
-| Language | Python 3.12 |
+| Language | Python 3.12 — *superseded: the project runs 3.13 everywhere, see `DECISIONS.md`* |
 | ORM | SQLAlchemy 2.0 (declarative, typed) |
 | Migrations | Alembic |
 | Validation/DTOs | Pydantic v2 |

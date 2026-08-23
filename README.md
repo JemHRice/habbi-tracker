@@ -12,6 +12,22 @@ more people. Stay tuned!
 
 > The **frontend** (Phase 3) lives in [`frontend/`](frontend/) and has its own
 > README covering how to run it, the offline behaviour, and Habbi.
+>
+> **Deployment** (Phase 4) is in [`docs/RUNBOOK.md`](docs/RUNBOOK.md) — the
+> production architecture, a start-to-finish first-deploy guide, and the two
+> documented upgrade paths.
+
+### Production
+
+| Layer | Where |
+|---|---|
+| API | Azure Container Apps, scale-to-zero, image from GHCR |
+| PWA | Azure Static Web Apps, free tier, per-PR previews |
+| Data | Neon serverless Postgres |
+| CI/CD | GitHub Actions — push to `main`, tests gate the deploy |
+
+Running cost is **$0/month**. Migrations apply on every container start;
+the seed is a one-time manual step so a deploy can never duplicate a board.
 
 
 The product is a **calm, non-punitive recording tool**. It celebrates what gets
@@ -433,8 +449,9 @@ Recorded here rather than expanded into scope. All are in `docs/DECISIONS.md` to
 - **Cross-board access returns 404, not 403**, so one board cannot probe for the
   existence of rows on the other.
 
-## Not built yet
+## Not built
 
-Deployment (Phase 4 — Azure Container Apps, Static Web Apps, Neon, GitHub
-Actions), notification delivery, offline mutation sync, public sign-up, the
-warehouse pipeline, and flexible "any N days per week" habits.
+Notification delivery, offline mutation sync, public sign-up, the warehouse
+pipeline, flexible "any N days per week" habits, a custom domain, Azure Key
+Vault and Azure-managed Postgres. The last two are documented upgrade paths in
+[`docs/RUNBOOK.md`](docs/RUNBOOK.md) rather than gaps.

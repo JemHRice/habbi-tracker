@@ -1,0 +1,13 @@
+# Normalise line endings so a Windows checkout can still build a Linux image.
+* text=auto
+
+# These are executed inside the container or by bash. A CRLF checkout turns the
+# shebang into `#!/bin/sh\r`, which fails with a bewildering
+# "no such file or directory" — so pin them to LF regardless of platform.
+*.sh text eol=lf
+Dockerfile text eol=lf
+*.bicep text eol=lf
+
+*.png binary
+*.ico binary
+*.woff2 binary

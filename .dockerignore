@@ -1,0 +1,31 @@
+# The API image needs the backend only.
+frontend/
+node_modules/
+
+.git/
+.github/
+.venv/
+venv/
+
+__pycache__/
+*.py[cod]
+*.egg-info/
+build/
+dist/
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Never ship local config, local data, or the private seed.
+.env
+.env.*
+!.env.example
+*.db
+*.sqlite*
+app/seed/data_local.py
+
+docs/
+tests/
+docker-compose.yml
+Makefile
+make.ps1

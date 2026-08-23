@@ -50,6 +50,14 @@ class Settings(BaseSettings):
     """Comma-separated origins allowed to call the API. The defaults are Vite's
     dev server; production sets this to the deployed frontend origin."""
 
+    cors_origin_regex: str = ""
+    """Optional pattern for origins that cannot be listed literally.
+
+    Static Web Apps gives every pull request its own preview hostname, so those
+    origins are not knowable ahead of time. Production sets this to a pattern
+    that matches only this app's preview hosts. Empty means "no pattern", which
+    is the right default everywhere else."""
+
     pin_throttle_max_attempts: int = 10
     """Failed PIN attempts for one user before a cooldown starts."""
 

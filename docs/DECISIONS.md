@@ -371,6 +371,14 @@ Format: **Decision** — rationale. (Alternatives considered / rejected, where u
 - **Scripts are `bash`, with no PowerShell twin** — unlike `make.ps1`. Git Bash ships with
   Git for Windows and is present, and these run once or twice in a project's life, so a
   second copy to keep in sync is not worth it.
+- **Postgres 18 everywhere.** Neon's project was created on 18, so `docker-compose.yml`
+  and the CI service container were bumped from 16 to match — same parity reasoning as the
+  Python 3.13 decision. Nothing in the schema is version-sensitive, but testing against a
+  different major than production is a gap worth not having. **The 18 image also moved its
+  data directory**: the volume now mounts at `/var/lib/postgresql`, not `.../data`, so that
+  `pg_upgrade` can work within one mount point. Mounting the old path makes the container
+  refuse to start. Verified: 176 tests pass on 18, and the production image migrates
+  against it cleanly.
 - **Log Analytics is provisioned because Container Apps requires it** for console logs. At
   this volume it sits inside the free ingestion grant; retention is capped at 30 days.
 
